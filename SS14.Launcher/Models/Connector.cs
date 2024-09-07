@@ -171,6 +171,9 @@ public class Connector : ReactiveObject
             //
 
             installation = await InstallContentBundleAsync(zipFile, zipHash, metadata, cancel);
+
+            if (metadata.ServerGC == true)
+                installation = installation with { ServerGC = true };
         }
 
         Log.Debug("Launching client");
@@ -542,6 +545,9 @@ public class Connector : ReactiveObject
             EnvVar("GLIBC_TUNABLES", "glibc.rtld.dynamic_sort=1");
         }
 
+        if (launchInfo.ServerGC)
+            EnvVar("DOTNET_gcServer", "1");
+
         ConfigureMultiWindow(launchInfo, startInfo);
 
         // DON'T ENABLE THIS THE LOADER USES THE LAUNCHER .NET VERSION ALWAYS SO ROLLFORWARD SHOULDN'T BE SPECIFIED.
@@ -763,6 +769,7 @@ public class Connector : ReactiveObject
 }
 
 public sealed record ContentBundleMetadata(
+    [property: JsonPropertyName("server_gc")] bool? ServerGC,
     [property: JsonPropertyName("engine_version")] string EngineVersion,
     [property: JsonPropertyName("base_build")] ContentBundleBaseBuild? BaseBuild
 );
