@@ -6,7 +6,7 @@ namespace SS14.Launcher;
 public static class ConfigConstants
 {
     public const string CurrentLauncherVersion = "2";
-    public static readonly bool DoVersionCheck = true;
+    public static readonly bool DoVersionCheck = false;
 
     // Refresh login tokens if they're within <this much> of expiry.
     public static readonly TimeSpan TokenRefreshThreshold = TimeSpan.FromDays(15);
@@ -31,7 +31,7 @@ public static class ConfigConstants
     public static readonly string AuthUrl = "https://auth.spacestation14.com/";
     public static readonly string[] DefaultHubUrls = {
         "https://cdn.spacestationmultiverse.com/hub/",
-        //"https://hub.spacestation14.com/",
+        "https://hub.spacestation14.com/",
         //"https://cdn.spacestationmultiverse.com/wizden-hub-mirror/"
     };
     public const string DiscordUrl = "https://SpaceStationMultiverse.com/discord/";

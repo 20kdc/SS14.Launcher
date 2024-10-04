@@ -23,9 +23,9 @@
 
     <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Margin="5 5 5 5" Text="{loc:Get For more details\, see the SSMV website., Context=Wizden login tab}" />
 
-    <!-- <Panel Background="{DynamicResource StripeBackBrush}">
+    <Panel Background="{DynamicResource StripeBackBrush}">
       <ContentControl Content="{Binding Screen}" />
-    </Panel> -->
+    </Panel>
 
 
   </DockPanel>
