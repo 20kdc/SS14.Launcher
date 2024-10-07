@@ -5,6 +5,8 @@ namespace SS14.Launcher;
 
 public static class ConfigConstants
 {
+    public const string LauncherTitle = "Y.A.N.A Launcher";
+
     public const string CurrentLauncherVersion = "2";
     public static readonly bool DoVersionCheck = false;
 
@@ -41,8 +43,8 @@ public static class ConfigConstants
     public const string AccountManagementUrl = $"{AccountBaseUrl}Manage";
     public const string AccountRegisterUrl = $"{AccountBaseUrl}Register";
     public const string AccountResendConfirmationUrl = $"{AccountBaseUrl}ResendEmailConfirmation";
-    public const string WebsiteUrl = "https://SpaceStationMultiverse.com/";
-    public const string DownloadUrl = "https://SpaceStationMultiverse.com/downloads/";
+    public const string WebsiteUrl = "https://github.com/20kdc/SS14.Launcher/tree/personal";
+    public const string DownloadUrl = "https://github.com/20kdc/SS14.Launcher/releases";
     public const string NewsFeedUrl = "https://spacestationmultiverse.com/rss";
     public const string LauncherVersionUrl = "https://cdn.blepstation.com/launcher_version.txt";
     public static readonly UrlFallbackSet RobustBuildsManifest = new ([

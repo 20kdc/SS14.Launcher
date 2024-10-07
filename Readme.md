@@ -1,57 +1,23 @@
-# Space Station Multiverse Launcher
+# 'Yet Another Name Appreciated' Launcher
 
-Community-driven launcher for Space Station 14 forks.
-
-[![](https://dcbadge.vercel.app/api/server/x88ymx6vBx?compact=true&style=plastic)](https://discord.gg/x88ymx6vBx) <- Discord if you would like to discuss alternate infrastructure projects or fork development :)
-
-## Download
-[Download binaries for Windows, Mac, and Linux](https://blepstation.com/download/)
-
-[Download on Steam](https://store.steampowered.com/app/2585480/Space_Station_Multiverse/)
+This is a fork of <https://github.com/Skyedra/SS14.Launcher/> which is a fork of <https://github.com/space-wizards/SS14.Launcher/>.
 
 ## Features
-Differences versus current upstream version:
 
- * **Translation** - Translated into multiple languages ([contribute translation](https://spacestationmultiverse.com/contribute-translation/)).
- * **Guest mode** - No auth server / registration required, but also compatible with WizDen accounts.  (Plans for more account providers in future)
- * **Offline support** - Ability to view & connect to servers as guest, even when WizDen auth server is down.
- * **Engine build mirror** - Engine downloads in this build are routed through a global CDN service, making them faster, more scalable, and less likely to have downtime.  These builds are populated by a simple script on BlepStation.com, which mirrors recent engine builds.  (This means you should still be able to connect to servers, even if you do not have engines already downloaded and the central server is down).
- * **Timeouts** - Set to faster values so you don't sit waiting for a full minute (!) during downtime.
- * **Multihub** - Manage multiple hubs, adding more reliability.  (Borrowed from [Visne's branch](https://github.com/Visne/SS14.Launcher/tree/multihub).)
- * **Hub mirror** - Mirrors WizDen hub's primary API call so you can get a list of servers, even if WizDen is down (this is also routed through a real CDN for reliability & scalability.)
- * **Manage multiple identities** - By default it is set up to allow you to manage multiple identities.
- * **Multiverse Engine** - Supports servers that run our [Multiverse engine fork](https://github.com/Space-Station-Multiverse/RobustToolbox).
- 
+1. This aims to support what the Space Station Multiverse launcher supports.
+2. This aims to support what the Wizard's Den launcher supports.
+3. Additional stuff I'm planning for later. It might not happen, but it could.
+
+## Plans
+
+* The crowning jewel of this fork would be to create a way for unpatched RT clients to connect to specially modified servers with decentralized authentication. If I can manage this, I win.
+* It would be nice to be able to register accounts on auth servers which aren't Wizard's Den.
+
 ## Limitations
 
- * To connect to a server without an account, the server must be configured for auth to be optional.  (At some point, I may try to figure out multi-auth).  This should work on blep and a few others.
- * There are a number of bugs yet and imperfect work arounds to make things functional.
- * Modules are not mirrored yet, so if you don't already have modules downloaded, try connecting to a server that requires WebView and WizDen's Centcomm is down, connection won't work.  I don't think most servers use WebView though.
+A lot of limitations from SSMV and from Wizard's Den's launcher itself still remain.
 
- The launcher uses its own data path, so it should not interfere with the official launcher if you have it installed.
-
-## Screenshots of Identity Setup
-
-![image](https://github.com/Skyedra/SS14.Launcher/assets/22365940/bc6a9c80-278d-4e2b-b2af-450645a3c0b4)
-
-![image](https://github.com/Skyedra/SS14.Launcher/assets/22365940/abebd5ee-1898-4d44-b2f5-7fdaa6f17409)
-
-## Demo of Offline Mode
-
-This video demonstrates offline mode working even when WizDen was offline.  (This video is a bit older, shows UI before the new identity setup layout was done)
-
-https://github.com/Skyedra/SS14.Launcher/assets/22365940/f182fd58-ccb8-4387-9f7a-198f957fc71d
-
-## More Screenshots
-
-![image](https://github.com/Skyedra/SS14.Launcher/assets/22365940/786a1765-32ab-42f5-9358-316a7ad4498a)
-
-
----
-
-# (Regular launcher info follows)
-
-This is the launcher you should be using to connect to SS14 servers. Server browser, content downloads, account management. It's got it all!
+The launcher presently uses the same data path as SSMV, this will be changed if issues crop up.
 
 # Development
 

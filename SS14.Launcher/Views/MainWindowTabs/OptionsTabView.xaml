@@ -67,11 +67,6 @@
                    Text="{loc:Get For when the developers are *very* stumped with your problem. (requires launcher restart)}"
                    Margin="8" />
 
-        <CheckBox VerticalAlignment="Center" Margin="4" IsChecked="{Binding OverrideAssets}" Content="{loc:Get Seasonal Branding}" />
-        <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
-                   Text="{loc:Get Whatever temporally relevant icons and logos we can come up with.}"
-                   Margin="8" />
-
         <CheckBox VerticalAlignment="Center" IsVisible="{Binding !HideDisableSigning}" Margin="4" IsChecked="{Binding DisableSigning}" Content="{loc:Get Disable Engine Signature Checks}" />
         <TextBlock VerticalAlignment="Center" IsVisible="{Binding !HideDisableSigning}" TextWrapping="Wrap"
                    Text="{loc:Get [DEV ONLY] Disables verification of engine signatures. DO NOT ENABLE UNLESS YOU KNOW EXACTLY WHAT YOU\'RE DOING.}"

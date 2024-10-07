@@ -9,7 +9,6 @@ using Avalonia.Platform;
 using JetBrains.Annotations;
 using Serilog;
 using SS14.Launcher.Localization;
-using SS14.Launcher.Models.OverrideAssets;
 using SS14.Launcher.Utility;
 
 namespace SS14.Launcher;
@@ -22,20 +21,10 @@ public class App : Application
         ["LogoLong"] = new AssetDef("logo-long.png", AssetType.Bitmap),
     };
 
-    private readonly OverrideAssetsManager _overrideAssets;
-
     private readonly Dictionary<string, object> _baseAssets = new();
 
-    // XAML insists on a parameterless constructor existing, despite this never being used.
-    [UsedImplicitly]
     public App()
     {
-        throw new InvalidOperationException();
-    }
-
-    public App(OverrideAssetsManager overrideAssets)
-    {
-        _overrideAssets = overrideAssets;
     }
 
     public override void Initialize()
@@ -47,8 +36,6 @@ public class App : Application
 
         LoadBaseAssets();
         IconsLoader.Load(this);
-
-        _overrideAssets.AssetsChanged += OnAssetsChanged;
     }
 
     private void LoadLocalization()
@@ -70,30 +57,6 @@ public class App : Application
 
             _baseAssets.Add(name, asset);
             Resources.Add(name, asset);
-        }
-    }
-
-    private void OnAssetsChanged(OverrideAssetsChanged obj)
-    {
-        foreach (var (name, data) in obj.Files)
-        {
-            if (!AssetDefs.TryGetValue(name, out var def))
-            {
-                Log.Warning("Unable to find asset def for asset: '{AssetName}'", name);
-                continue;
-            }
-
-            var ms = new MemoryStream(data, writable: false);
-            var asset = LoadAsset(def.Type, ms);
-
-            Resources[name] = asset;
-        }
-
-        // Clear assets not given to base data.
-        foreach (var (name, asset) in _baseAssets)
-        {
-            if (!obj.Files.ContainsKey(name))
-                Resources[name] = asset;
         }
     }
 

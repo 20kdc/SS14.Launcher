@@ -96,12 +96,8 @@ public static class CVars
     /// </summary>
     public static readonly CVarDef<int> MaxForkVersionsToKeep = CVarDef.Create("MaxForkVersionsToKeep", 3);
 
-    /// <summary>
-    /// Whether to display override assets (trans rights).
-    /// </summary>
-    public static readonly CVarDef<bool> OverrideAssets = CVarDef.Create("OverrideAssets", true);
+    // If I'm going to put a trans flag on this launcher I'm not going to bother making it an option. ~ 20kdc
 
-    /// <summary>
     /// Stores the minimum player count value used by the "minimum player count" filter.
     /// </summary>
     /// <seealso cref="ServerFilter.PlayerCountMin"/>

@@ -21,7 +21,6 @@ using SS14.Launcher.Models.Data;
 using SS14.Launcher.Models.ServerStatus;
 using SS14.Launcher.Models.EngineManager;
 using SS14.Launcher.Models.Logins;
-using SS14.Launcher.Models.OverrideAssets;
 using SS14.Launcher.Utility;
 using SS14.Launcher.ViewModels;
 using SS14.Launcher.Views;
@@ -242,7 +241,6 @@ internal static class Program
         var authApi = new AuthApi(http);
         var hubApi = new HubApi(http);
         var launcherInfo = new LauncherInfoManager(http);
-        var overrideAssets = new OverrideAssetsManager(cfg, http, launcherInfo);
         var loginManager = new LoginManager(cfg, authApi);
 
         locator.RegisterConstant(new ContentManager());
@@ -252,12 +250,11 @@ internal static class Program
         locator.RegisterConstant(hubApi);
         locator.RegisterConstant(new ServerListCache());
         locator.RegisterConstant(loginManager);
-        locator.RegisterConstant(overrideAssets);
         locator.RegisterConstant(new Localization.LocalizationManager());
         locator.RegisterConstant(launcherInfo);
         locator.RegisterConstant(new AgeManager());
 
-        return AppBuilder.Configure(() => new App(overrideAssets))
+        return AppBuilder.Configure(() => new App())
             .UsePlatformDetect()
             .With(new FontManagerOptions
             {
@@ -273,12 +270,10 @@ internal static class Program
     {
         var msgr = Locator.Current.GetRequiredService<LauncherMessaging>();
         var contentManager = Locator.Current.GetRequiredService<ContentManager>();
-        var overrideAssets = Locator.Current.GetRequiredService<OverrideAssetsManager>();
         var launcherInfo = Locator.Current.GetRequiredService<LauncherInfoManager>();
 
         contentManager.Initialize();
         launcherInfo.Initialize();
-        overrideAssets.Initialize();
 
         var viewModel = new MainWindowViewModel();
         var window = new MainWindow

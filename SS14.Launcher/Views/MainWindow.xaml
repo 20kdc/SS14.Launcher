@@ -12,7 +12,7 @@
         Width="650" Height="400"
         x:Class="SS14.Launcher.Views.MainWindow"
         Icon="{DynamicResource WindowIcon}"
-        Title="{loc:Get Space Station Multiverse Launcher}"
+        Title="{Binding Title}"
         DragDrop.AllowDrop="True">
 
   <Design.DataContext>
@@ -35,18 +35,11 @@
           <!--<v:Logo DockPanel.Dock="Left" Height="60" HorizontalAlignment="Left" Margin="0, 8"></v:Logo>-->
           <Grid DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center"
                 ColumnDefinitions="Auto, Auto" RowDefinitions="Auto, Auto" Margin="0, 0, 3, 0">
-            <!-- Discord link -->
-            <Button Grid.Row="0" Grid.Column="0" MinWidth="90"
-                    Command="{Binding OnDiscordButtonPressed}" Classes="OpenBoth"
-                    Margin="0, 6, 2, 2">
-              <v:IconLabel Icon="{DynamicResource InfoIcon-discord}" Content="{loc:Get SSMV Discord, Context=Header Buttons}" />
-            </Button>
-
-            <!-- Website link -->
+            <!-- GitHub link -->
             <Button Grid.Row="0" Grid.Column="1" MinWidth="90"
                     Command="{Binding OnWebsiteButtonPressed}" Classes="OpenLeft"
                     Margin="0, 6, 0, 2">
-              <v:IconLabel Icon="{DynamicResource InfoIcon-web}" Content="{loc:Get Website, Context=Header Buttons}" />
+              <v:IconLabel Icon="{DynamicResource InfoIcon-github}" Content="{loc:Get Launcher Code/Issues, Context=Header Buttons}" />
             </Button>
 
             <!-- Account drop down -->

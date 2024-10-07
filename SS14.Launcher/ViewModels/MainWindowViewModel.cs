@@ -39,6 +39,8 @@ public sealed class MainWindowViewModel : ViewModelBase, IErrorOverlayOwner
     public DataManager Cfg => _cfg;
     [Reactive] public bool OutOfDate { get; private set; }
 
+    public string Title => ConfigConstants.LauncherTitle;
+
     // Main Tabs
 
     public HomePageViewModel HomeTab { get; }
@@ -272,11 +274,6 @@ public sealed class MainWindowViewModel : ViewModelBase, IErrorOverlayOwner
     {
         // Check if accounts are still valid and refresh their tokens if necessary.
         await _loginMgr.Initialize();
-    }
-
-    public void OnDiscordButtonPressed()
-    {
-        Helpers.OpenUri(new Uri(ConfigConstants.DiscordUrl));
     }
 
     public void OnWebsiteButtonPressed()
