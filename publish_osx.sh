@@ -23,7 +23,7 @@ mkdir -p "bin/publish/macOS/Space Station Multiverse Launcher.app/Contents/Resou
 cp -r Dependencies/dotnet/mac/* "bin/publish/macOS/Space Station Multiverse Launcher.app/Contents/Resources/dotnet/"
 cp -r SS14.Launcher/bin/Release/net8.0/osx-x64/publish/* "bin/publish/macOS/Space Station Multiverse Launcher.app/Contents/Resources/bin/"
 cp -r SS14.Loader/bin/Release/net8.0/osx-x64/publish/* "bin/publish/macOS/Space Station Multiverse Launcher.app/Contents/Resources/bin/loader/Space Station 14.app/Contents/Resources/bin/"
-cp LICENSE.txt bin/publish/macOS/
+cp LICENSE.txt PublishFiles/FTL.TXT PublishFiles/ThirdPartyNotices.txt bin/publish/macOS/
 pushd bin/publish/macOS
 zip -r ../../../SSMV.Launcher_macOS.zip *
 popd
