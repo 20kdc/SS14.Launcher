@@ -1,17 +1,16 @@
 # 'Yet Another Name Appreciated' Launcher
 
+![](./assets/logo.svg)
+
 This is a fork of <https://github.com/Skyedra/SS14.Launcher/> which is a fork of <https://github.com/space-wizards/SS14.Launcher/>.
 
 ## Features
 
-1. This aims to support what the Space Station Multiverse launcher supports.
-2. This aims to support what the Wizard's Den launcher supports.
-3. Additional stuff I'm planning for later. It might not happen, but it could.
-
-## Plans
-
-* The crowning jewel of this fork would be to create a way for unpatched RT clients to connect to specially modified servers with decentralized authentication. If I can manage this, I win.
-* It would be nice to be able to register accounts on auth servers which aren't Wizard's Den.
+* Can connect to:
+	* RobustToolbox (Wizard's Den hub) servers (with Wizard's Den auth)
+	* MV Engine (Space Station Multiverse hub) servers (with MV Key auth)
+	* Servers running vanilla RobustToolbox with a server-only patch (<https://github.com/20kdc/RobustToolbox/tree/newkey-236.0.0>) to support MV Key auth via a custom method.
+		* The advantage here is that you can 'just add' decentralized authentication to your server while still retaining Wizard's Den auth support.
 
 ## Limitations
 
@@ -19,7 +18,7 @@ A lot of limitations from SSMV and from Wizard's Den's launcher itself still rem
 
 The launcher presently uses the same data path as SSMV, this will be changed if issues crop up.
 
-# Development
+## Development
 
 Useful environment variables for development:
 * `SS14_LAUNCHER_APPDATA_NAME=launcherTest` to change the user data directories the launcher stores its data in. This can be useful to avoid breaking your "normal" SS14 launcher data while developing something.
