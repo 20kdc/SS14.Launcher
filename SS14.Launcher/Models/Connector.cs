@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -226,6 +227,8 @@ public class Connector : ReactiveObject
     {
         var cVars = new List<(string, string)>();
 
+        var username = _loginManager.ActiveAccount?.Username ?? ConfigConstants.FallbackUsername;
+
         if (info != null && info.AuthInformation.Mode != AuthMode.Disabled && _loginManager.ActiveAccount != null)
         {
             var account = _loginManager.ActiveAccount;
@@ -248,7 +251,7 @@ public class Connector : ReactiveObject
                 var privateKey = ECDsa.Create();
                 privateKey.ImportFromPem(keyInfo.PrivateKey);
 
-                // Create JWT
+                // Create JWT (for MV engine)
                 var jwt = JwtBuilder.Create()
                     .WithAlgorithm(new ES256Algorithm(publicKey, privateKey))
                     .AddClaim("exp", DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds()) // expiry
@@ -260,7 +263,32 @@ public class Connector : ReactiveObject
 
                 cVars.Add(("ROBUST_USER_JWT", jwt));
                 cVars.Add(("ROBUST_USER_PUBLIC_KEY", keyInfo.PublicKey));
-                cVars.Add(("ROBUST_AUTH_PUBKEY", info.AuthInformation.PublicKey));
+                // -- MV Engine uses above 2 and ROBUST_AUTH_PUBKEY --
+
+                cVars.Add(("ROBUST_USER_PRIVATE_KEY", keyInfo.PrivateKey));
+                // this username flag would break MV engine, but on upstream we need it as a signal
+                if (!((serverBuildInformation?.EngineVersion ?? "").StartsWith("mv-")))
+                {
+                    username = "NK!" + username;
+                }
+                // NewKey: SS14.Loader issues JWTs inside an authentication server it manages.
+                // Multiple instances of the local auth server can conflict.
+                // But we don't want to force launcher to be around.
+                // Therefore we let the IAS fail on the second launch.
+                // The use of the hash of the private key here is just to use something consistent and safe.
+                byte[] privKeyHash;
+                {
+                    using var sha = SHA256.Create();
+                    privKeyHash = sha.ComputeHash(Encoding.UTF8.GetBytes(keyInfo.PrivateKey));
+                }
+                cVars.Add(("ROBUST_AUTH_TOKEN", Convert.ToBase64String(privKeyHash)));
+                // Hypothetically we could pointlessly replicate the GUID conversion code here. We'll see how it goes.
+                cVars.Add(("ROBUST_AUTH_USERID", "00000000-0000-0000-0000-000000000000"));
+                cVars.Add(("ROBUST_AUTH_SERVER", "http://127.0.0.1:47285/"));
+                if (parsedAddr != null)
+                {
+                    cVars.Add(("ROBUST_NEWKEY_TARGET", UriHelper.GetServerNewKeyAddress(parsedAddr).ToString()));
+                }
             }
 
             cVars.Add(("ROBUST_AUTH_PUBKEY", info.AuthInformation.PublicKey));
@@ -272,7 +300,7 @@ public class Connector : ReactiveObject
             {
                 // Pass username to launched client.
                 // We don't load username from client_config.toml when launched via launcher.
-                "--username", _loginManager.ActiveAccount?.Username ?? ConfigConstants.FallbackUsername,
+                "--username", username,
 
                 // GLES2 forcing or using default fallback
                 "--cvar", $"display.compat={_cfg.GetCVar(CVars.CompatMode)}",

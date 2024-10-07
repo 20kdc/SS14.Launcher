@@ -127,6 +127,24 @@ public static class UriHelper
     }
 
     /// <summary>
+    ///     Gets the <c>/newkeyauth</c> HTTP address for a server address.
+    /// </summary>
+    [Pure]
+    public static Uri GetServerNewKeyAddress(string serverAddress)
+    {
+        return GetServerInfoAddress(ParseSs14Uri(serverAddress));
+    }
+
+    /// <summary>
+    ///     Gets the <c>/newkeyauth</c> HTTP address for an ss14 uri.
+    /// </summary>
+    [Pure]
+    public static Uri GetServerNewKeyAddress(Uri serverAddress)
+    {
+        return new Uri(GetServerApiAddress(serverAddress), "newkeyauth");
+    }
+
+    /// <summary>
     ///     Gets the <c>/client.zip</c> HTTP address for a server address.
     ///     This is not necessarily the actual client ZIP address.
     /// </summary>

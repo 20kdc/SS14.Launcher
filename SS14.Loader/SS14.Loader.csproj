@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="SpaceWizards.HttpListener" PrivateAssets="compile" />
+    <PackageReference Include="JWT" />
     <PackageReference Include="Microsoft.Data.Sqlite.Core" />
     <PackageReference Include="SQLitePCLRaw.provider.sqlite3" Condition="'$(UseSystemSqlite)' == 'True'" />
     <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Condition="'$(UseSystemSqlite)' != 'True'" />

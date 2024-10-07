@@ -11,7 +11,7 @@ using Robust.LoaderApi;
 
 namespace SS14.Loader;
 
-internal class Program
+internal partial class Program
 {
     private readonly string[] _engineArgs;
     private const string RobustAssemblyName = "Robust.Client";
@@ -72,6 +72,8 @@ internal class Program
 
         var args = new MainArgs(_engineArgs, _fileApi, redialApi, extraMounts);
 
+        AttemptStartInternalAuthServer();
+
         try
         {
             loader.Main(args);
@@ -79,6 +81,7 @@ internal class Program
         finally
         {
             contentApi?.Dispose();
+            StopInternalAuthServer();
         }
         return true;
     }
