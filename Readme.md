@@ -23,3 +23,11 @@ The launcher presently uses the same data path as SSMV, this will be changed if 
 Useful environment variables for development:
 * `SS14_LAUNCHER_APPDATA_NAME=launcherTest` to change the user data directories the launcher stores its data in. This can be useful to avoid breaking your "normal" SS14 launcher data while developing something.
 * `SS14_LAUNCHER_OVERRIDE_AUTH=https://.../` to change the auth API URL to test against a local dev version of the API.
+
+## Licensing
+
+Where not otherwise stated, files in this repository are under the SS14.Launcher MIT license (`./LICENSE.txt`).
+
+The launcher _as released_ comes with various licenses for all the various components used in it.
+
+The `ServerEnginePatch` directory _specifically,_ including all code there, is under the RobustToolbox MIT license.
