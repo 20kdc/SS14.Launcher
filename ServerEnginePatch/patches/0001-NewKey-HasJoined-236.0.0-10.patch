@@ -1,0 +1,31 @@
+From 2bbb5e01d9425ed99ce754908c53142c9b6c37ae Mon Sep 17 00:00:00 2001
+From: t20kdc <asdd2808@gmail.com>
+Date: Fri, 11 Oct 2024 19:32:27 +0100
+Subject: [PATCH 1/2] NewKey, HasJoined, 236.0.0, 10
+
+---
+ .../Network/NetManager.NewKey.ResponseMaker.cs       | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+ create mode 100644 Robust.Shared/Network/NetManager.NewKey.ResponseMaker.cs
+
+diff --git a/Robust.Shared/Network/NetManager.NewKey.ResponseMaker.cs b/Robust.Shared/Network/NetManager.NewKey.ResponseMaker.cs
+new file mode 100644
+index 000000000..bf9132e85
+--- /dev/null
++++ b/Robust.Shared/Network/NetManager.NewKey.ResponseMaker.cs
+@@ -0,0 +1,12 @@
++using System;
++
++namespace Robust.Shared.Network;
++
++public sealed partial class NetManager
++{
++    private HasJoinedResponse NewKeyCreateHasJoinedResponse(string userName, Guid guid)
++    {
++        var hjud = new HasJoinedUserData(userName, guid, null);
++        return new HasJoinedResponse(true, hjud);
++    }
++}
+-- 
+2.43.0
+

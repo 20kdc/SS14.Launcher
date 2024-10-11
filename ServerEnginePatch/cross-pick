@@ -1,12 +1,15 @@
 #!/bin/sh
 set -e
 
-CURRENT="`cat current.commit`"
+BASE="$1"
+CHERRYPICK="$2"
+TAG="$3"
 
 cd RobustToolbox
-git checkout "$1"
-git cherry-pick "$CURRENT"
+git checkout "$BASE"
+git cherry-pick "$CHERRYPICK"
+git tag -f "$TAG"
 COMMIT="`git rev-parse HEAD`"
 cd ..
 
-echo "$COMMIT" > "$PATCH.commit"
+echo "$COMMIT" > "current.commit"

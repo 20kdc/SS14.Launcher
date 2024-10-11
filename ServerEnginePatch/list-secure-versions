@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+
+import json
+r = json.load(open("manifest.json", "r"))
+for k in r:
+	if "insecure" in r[k]:
+		if r[k]["insecure"]:
+			continue
+	print(k)

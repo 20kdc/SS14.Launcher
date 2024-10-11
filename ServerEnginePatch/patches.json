@@ -1,6 +1,35 @@
 {
-	"v230.0.0": {
+	"v144.0.5": {
+		"base": "ebb71d6c12f844e91e1bb56eebe73ccda9b383aa",
+		"list": [
+			"patches/0001-NewKey-Platform-144.0.5-8.patch",
+			"patches/0001-NewKey-HasJoined-236.0.0-10.patch",
+			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+		]
+	},
+	"v145.0.0": null,
+	"v205.0.0": {
+		"base": "ff4548f108a5b11e1a81cb7c01f7462400e4af2b",
+		"list": [
+			"patches/0001-NewKey-Platform-224.0.0-8.patch",
+			"patches/0001-NewKey-HasJoined-236.0.0-10.patch",
+			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+		]
+	},
+	"v224.1.0": {
 		"base": "1c3ea968e4ab66d57ffe014f6ee207e4d0d2c403",
-		"patch": "236.0.0.patch"
+		"list": [
+			"patches/0001-NewKey-Platform-236.0.0-8.patch",
+			"patches/0001-NewKey-HasJoined-236.0.0-10.patch",
+			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+		]
+	},
+	"v236.1.0": {
+		"base": "d1d43f834b8845da698ef1898e8191ab159ee367",
+		"list": [
+			"patches/0001-NewKey-Platform-236.0.0-8.patch",
+			"patches/0001-NewKey-HasJoined-236.1.0-10.patch",
+			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+		]
 	}
 }
