@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+BASE="$1"
+PATCH="$2"
+
+if [ -e "$PATCH.commit" ]; then
+	# skip
+	exit 0
+fi
+
+cp "$PATCH" RobustToolbox/__patch.patch
+
+cd RobustToolbox
+git checkout "$BASE"
+git am < __patch.patch
+COMMIT="`git rev-parse HEAD`"
+rm __patch.patch
+cd ..
+
+echo "$COMMIT" > "$PATCH.commit"

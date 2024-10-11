@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+# Try to ensure a coherent tag list...
+cd RobustToolbox
+git fetch origin
+git tag | grep "^v[0-9]" > tags_temp
+cd ..
+
+# Tag list is coherent
+mv RobustToolbox/tags_temp tags
+
+./driver.py

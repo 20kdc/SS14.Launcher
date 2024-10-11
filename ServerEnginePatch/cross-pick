@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+CURRENT="`cat current.commit`"
+
+cd RobustToolbox
+git checkout "$1"
+git cherry-pick "$CURRENT"
+COMMIT="`git rev-parse HEAD`"
+cd ..
+
+echo "$COMMIT" > "$PATCH.commit"

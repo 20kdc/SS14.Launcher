@@ -1,0 +1,423 @@
+From fd335c5ed3f3a767a7406a85eecff306342957d6 Mon Sep 17 00:00:00 2001
+From: t20kdc <asdd2808@gmail.com>
+Date: Fri, 11 Oct 2024 17:33:15 +0100
+Subject: [PATCH] NewKey (base 236.0.0, rev 6)
+
+---
+ Directory.Packages.props                      |   1 +
+ Resources/EngineCredits/Libraries.yml         |  24 ++++
+ Robust.Client/ClientIoC.cs                    |   3 +-
+ Robust.Server/ServerIoC.cs                    |   1 +
+ .../ServerStatus/StatusHost.Handlers.cs       |   1 +
+ .../ServerStatus/StatusHost.NewKey.cs         | 133 ++++++++++++++++++
+ Robust.Shared/CVars.cs                        |  10 ++
+ Robust.Shared/Network/DummyNewKeyService.cs   |  12 ++
+ Robust.Shared/Network/INewKeyService.cs       |  18 +++
+ Robust.Shared/Network/NetManager.NewKey.cs    |   9 ++
+ .../Network/NetManager.ServerAuth.cs          |  38 ++++-
+ Robust.Shared/Robust.Shared.csproj            |   1 +
+ 12 files changed, 248 insertions(+), 3 deletions(-)
+ create mode 100644 Robust.Server/ServerStatus/StatusHost.NewKey.cs
+ create mode 100644 Robust.Shared/Network/DummyNewKeyService.cs
+ create mode 100644 Robust.Shared/Network/INewKeyService.cs
+ create mode 100644 Robust.Shared/Network/NetManager.NewKey.cs
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index d5d38d218..4cb17e02d 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -15,6 +15,7 @@
+     <PackageVersion Include="ILReader.Core" Version="1.0.0.4" />
+     <PackageVersion Include="JetBrains.Annotations" Version="2023.3.0" />
+     <PackageVersion Include="JetBrains.Profiler.Api" Version="1.4.0" />
++    <PackageVersion Include="JWT" Version="10.1.1" />
+     <PackageVersion Include="Linguini.Bundle" Version="0.8.1" />
+     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
+     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.1" />
+diff --git a/Resources/EngineCredits/Libraries.yml b/Resources/EngineCredits/Libraries.yml
+index eb9348c45..dc3e6be60 100644
+--- a/Resources/EngineCredits/Libraries.yml
++++ b/Resources/EngineCredits/Libraries.yml
+@@ -703,6 +703,30 @@
+     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ 
++- name: Jwt.Net
++  license: |
++    # Public Domain
++
++    Originally written by John Sheehan (https://john-sheehan.com). Then updated and maintained by Alexander Batishchev (https://abatishchev.dev).
++
++    This work is public domain.
++
++    The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law.
++
++    For more information, please visit: http://creativecommons.org/publicdomain/zero/1.0/
++
++    # MIT
++
++    Copyright (c) 2019 Jwt.Net Maintainers and Contributors.
++
++    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
++
++    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
++
++    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++
++    For more information, please visit: https://opensource.org/licenses/MIT
++
+ - name: OpenTK
+   license: |
+     # MIT License
+diff --git a/Robust.Client/ClientIoC.cs b/Robust.Client/ClientIoC.cs
+index b444bd09e..716a8410e 100644
+--- a/Robust.Client/ClientIoC.cs
++++ b/Robust.Client/ClientIoC.cs
+@@ -1,4 +1,4 @@
+-using System;
++﻿using System;
+ using Robust.Client.Audio;
+ using Robust.Client.Audio.Midi;
+ using Robust.Client.Configuration;
+@@ -54,6 +54,7 @@ namespace Robust.Client
+         public static void RegisterIoC(GameController.DisplayMode mode, IDependencyCollection deps)
+         {
+             SharedIoC.RegisterIoC(deps);
++            deps.Register<INewKeyService, DummyNewKeyService>(); // NewKey: Dummy for resolution
+ 
+             deps.Register<IGameTiming, ClientGameTiming>();
+             deps.Register<IClientGameTiming, ClientGameTiming>();
+diff --git a/Robust.Server/ServerIoC.cs b/Robust.Server/ServerIoC.cs
+index d69eb0f6e..e98db04fa 100644
+--- a/Robust.Server/ServerIoC.cs
++++ b/Robust.Server/ServerIoC.cs
+@@ -42,6 +42,7 @@ namespace Robust.Server
+         internal static void RegisterIoC(IDependencyCollection deps)
+         {
+             SharedIoC.RegisterIoC(deps);
++            deps.Register<INewKeyService, StatusHost>();
+ 
+             deps.Register<IBaseServer, BaseServer>();
+             deps.Register<IBaseServerInternal, BaseServer>();
+diff --git a/Robust.Server/ServerStatus/StatusHost.Handlers.cs b/Robust.Server/ServerStatus/StatusHost.Handlers.cs
+index 5ab298643..4d8a4dacd 100644
+--- a/Robust.Server/ServerStatus/StatusHost.Handlers.cs
++++ b/Robust.Server/ServerStatus/StatusHost.Handlers.cs
+@@ -18,6 +18,7 @@ namespace Robust.Server.ServerStatus
+             AddHandler(HandleTeapot);
+             AddHandler(HandleStatus);
+             AddHandler(HandleInfo);
++            AddHandler(HandleNewKey);
+             AddAczHandlers();
+         }
+ 
+diff --git a/Robust.Server/ServerStatus/StatusHost.NewKey.cs b/Robust.Server/ServerStatus/StatusHost.NewKey.cs
+new file mode 100644
+index 000000000..11b0142ad
+--- /dev/null
++++ b/Robust.Server/ServerStatus/StatusHost.NewKey.cs
+@@ -0,0 +1,133 @@
++using System;
++using System.Collections.Generic;
++using System.Linq;
++using System.Threading;
++using System.Threading.Tasks;
++using System.Net;
++using System.Net.Http.Headers;
++using System.Security.Cryptography;
++using System.Text;
++using System.Text.Json;
++using System.Text.Json.Nodes;
++using System.Text.Json.Serialization;
++using System.Text.Json.Nodes;
++using System.Web;
++using JWT;
++using JWT.Algorithms;
++using JWT.Builder;
++using JWT.Exceptions;
++using JWT.Serializers;
++using Robust.Shared;
++using Robust.Shared.Utility;
++
++namespace Robust.Server.ServerStatus;
++
++internal sealed partial class StatusHost : Robust.Shared.Network.INewKeyService
++{
++    private readonly SemaphoreSlim _newkeyLock = new(1, 1);
++    private readonly Dictionary<string, Guid> _newkeyDict = new();
++
++    public Guid? TryNewKeyServerAuthArrange(string authHash)
++    {
++        _httpSawmill.Debug("NewKey: TryNewKeyServerAuthArrange(" + authHash + ")");
++        using (var _ = _newkeyLock.WaitGuard())
++        {
++            if (_newkeyDict.TryGetValue(authHash, out var guid))
++            {
++                return guid;
++            }
++        }
++        return null;
++    }
++
++    private async Task<bool> HandleNewKey(IStatusHandlerContext context)
++    {
++        var url = context.Url;
++        if (url.AbsolutePath != "/newkeyauth")
++        {
++            return false;
++        }
++
++        if (!context.RequestHeaders.TryGetValue("X-NewKey-JWT", out var jwt))
++        {
++            await context.RespondErrorAsync(HttpStatusCode.Unauthorized);
++            return true;
++        }
++
++        if (!context.RequestHeaders.TryGetValue("X-NewKey-Pubkey", out var userPublicKeyStr))
++        {
++            await context.RespondErrorAsync(HttpStatusCode.Unauthorized);
++            return true;
++        }
++
++        // Alright, now we get to the fun part: figuring out who this is.
++        JwtParsedFields json;
++        ECDsa userPublicKey;
++        try
++        {
++            var serializer = new JsonNetSerializer();
++            var provider = new UtcDateTimeProvider();
++            var validator = new JwtValidator(serializer, provider);
++            var urlEncoder = new JwtBase64UrlEncoder();
++
++            userPublicKey = ECDsa.Create();
++            userPublicKey.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(userPublicKeyStr!)));
++
++            var algorithm = new ES256Algorithm(userPublicKey);
++            var decoder = new JwtDecoder(serializer, validator, urlEncoder, algorithm);
++
++            json = decoder.DecodeToObject<JwtParsedFields>(jwt);
++            // _httpSawmill.Debug("NewKey: Decoded JWT: " + decoder.Decode(jwt));
++        }
++        catch (Exception e)
++        {
++            await context.RespondAsync(e.ToString(), HttpStatusCode.Unauthorized);
++            return true;
++        }
++
++        var myAudience = _netManager.CryptoPublicKey != null
++                    ? Convert.ToBase64String(_netManager.CryptoPublicKey)
++                    : null;
++
++        if (json.Aud != myAudience)
++        {
++            await context.RespondAsync("Server public key mismatch", HttpStatusCode.Unauthorized);
++            return true;
++        }
++
++        var userPublicKeyX509Der = userPublicKey.ExportSubjectPublicKeyInfo();
++
++        var incHash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
++        incHash.AppendData(userPublicKeyX509Der);
++        incHash.AppendData(Encoding.UTF8.GetBytes(_cfg.GetCVar(CVars.AuthNewKeySalt)));
++        var hash = incHash.GetHashAndReset();
++
++        // Alright, now we convert this hash to a GUID.
++        // This is the opposing statement to the & 0x7F in NetManager.ServerAuth.cs
++        // That kicks server GUIDs into one namespace, this kicks decentralized GUIDs into another.
++        hash[7] |= 0x80;
++        var guid = new Guid(new ReadOnlySpan<byte>(hash).Slice(0, 16));
++        var authHash = json.AuthHash;
++
++        _httpSawmill.Debug("NewKey: Authorized AuthHash: " + authHash);
++
++        using (var _ = _newkeyLock.WaitGuard())
++        {
++            _newkeyDict[authHash] = guid;
++        }
++
++        Task.Run(async () =>
++        {
++            await Task.Delay(60000);
++            using (var _ = _newkeyLock.WaitGuard())
++            {
++                _newkeyDict.Remove(authHash);
++            }
++        });
++
++        await context.RespondAsync($"Received and understood, {guid} {authHash}", (HttpStatusCode) 200);
++        return true;
++    }
++
++    private sealed record JwtParsedFields(string? Aud, string AuthHash);
++}
+diff --git a/Robust.Shared/CVars.cs b/Robust.Shared/CVars.cs
+index ebd4e29b2..58074fdb1 100644
+--- a/Robust.Shared/CVars.cs
++++ b/Robust.Shared/CVars.cs
+@@ -893,6 +893,16 @@ namespace Robust.Shared
+         public static readonly CVarDef<string> AuthServer =
+             CVarDef.Create("auth.server", AuthManager.DefaultAuthServer, CVar.SERVERONLY);
+ 
++        /// <summary>
++        /// NewKey salt.
++        /// This randomizes the mapping from user public keys to GUIDs.
++        /// This is kept hidden from clients.
++        /// Using this cvar adds extra security, but is not strictly required.
++        /// 'Mining' a GUID would take roughly the hashpower of the Bitcoin network going for at least a thousand years.
++        /// </summary>
++        public static readonly CVarDef<string> AuthNewKeySalt =
++            CVarDef.Create("auth.newkey_salt", "", CVar.SERVERONLY | CVar.CONFIDENTIAL);
++
+         /*
+          * RENDERING
+          */
+diff --git a/Robust.Shared/Network/DummyNewKeyService.cs b/Robust.Shared/Network/DummyNewKeyService.cs
+new file mode 100644
+index 000000000..e8cd1ed8d
+--- /dev/null
++++ b/Robust.Shared/Network/DummyNewKeyService.cs
+@@ -0,0 +1,12 @@
++using System;
++using System.Threading.Tasks;
++
++namespace Robust.Shared.Network;
++
++public sealed class DummyNewKeyService : INewKeyService
++{
++    public Guid? TryNewKeyServerAuthArrange(string authHash)
++    {
++        return null;
++    }
++}
+diff --git a/Robust.Shared/Network/INewKeyService.cs b/Robust.Shared/Network/INewKeyService.cs
+new file mode 100644
+index 000000000..40115012c
+--- /dev/null
++++ b/Robust.Shared/Network/INewKeyService.cs
+@@ -0,0 +1,18 @@
++﻿using System;
++using System.Threading.Tasks;
++
++namespace Robust.Shared.Network;
++
++/// <summary>
++/// NewKey: ServerAuth code is in shared for some reason.
++/// This code is attached to the status server to arrange sessions.
++/// Please do not access this code in your client content. Ever.
++/// </summary>
++public interface INewKeyService
++{
++    /// <summary>
++    /// NewKey: Attempts to arrange a NewKey authentication session.
++    /// See wherever I put the project megarepo for documentation on what I'm doing here.
++    /// </summary>
++    Guid? TryNewKeyServerAuthArrange(string authHash);
++}
+diff --git a/Robust.Shared/Network/NetManager.NewKey.cs b/Robust.Shared/Network/NetManager.NewKey.cs
+new file mode 100644
+index 000000000..5044ceece
+--- /dev/null
++++ b/Robust.Shared/Network/NetManager.NewKey.cs
+@@ -0,0 +1,9 @@
++using Robust.Shared.IoC;
++
++namespace Robust.Shared.Network
++{
++    public sealed partial class NetManager
++    {
++        [Dependency] private readonly INewKeyService _newKeySvc = default!;
++    }
++}
+diff --git a/Robust.Shared/Network/NetManager.ServerAuth.cs b/Robust.Shared/Network/NetManager.ServerAuth.cs
+index 8296c446d..31047ca5a 100644
+--- a/Robust.Shared/Network/NetManager.ServerAuth.cs
++++ b/Robust.Shared/Network/NetManager.ServerAuth.cs
+@@ -1,4 +1,5 @@
+ ﻿using System;
++using System.Globalization;
+ using System.Linq;
+ using System.Net;
+ using System.Net.Http;
+@@ -18,6 +19,8 @@ namespace Robust.Shared.Network
+     {
+         private static readonly string DisconnectReasonWrongKey = new NetDisconnectMessage("Token decryption failed.\nPlease reconnect to this server from the launcher.", true).Encode();
+ 
++        private static readonly string DisconnectReasonNewKeyError = new NetDisconnectMessage("NewKey token not received or didn't match.\nPlease reconnect to this server from the launcher.", true).Encode();
++
+         private readonly byte[] _cryptoPrivateKey = new byte[CryptoBox.SecretKeyBytes];
+ 
+         public byte[] CryptoPublicKey { get; } = new byte[CryptoBox.PublicKeyBytes];
+@@ -137,6 +140,30 @@ namespace Robust.Shared.Network
+                     var authHashBytes = MakeAuthHash(sharedSecret, CryptoPublicKey!);
+                     var authHash = Base64Helpers.ConvertToBase64Url(authHashBytes);
+ 
++                    // NewKey: Launcher embeds signalling into the username which client passes.
++                    // This signal tells us to ask Status for help.
++                    if (msgLogin.UserName.StartsWith("NK!", false, CultureInfo.InvariantCulture))
++                    {
++                        var reqUserName = msgLogin.UserName.Substring(3);
++                        if (!UsernameHelpers.IsNameValid(reqUserName, out var reason))
++                        {
++                            connection.Disconnect($"Username is invalid ({reason.ToText()}).");
++                            return;
++                        }
++                        // Notably, ConvertToBase64Url is not the same thing.
++                        var res = _newKeySvc.TryNewKeyServerAuthArrange(Convert.ToBase64String(authHashBytes));
++                        if (res == null)
++                        {
++                            connection.Disconnect(DisconnectReasonNewKeyError);
++                            return;
++                        }
++                        userData = new NetUserData(new NetUserId(res!.Value), reqUserName + "-" + res!)
++                        {
++                            HWId = msgLogin.HWId
++                        };
++                        goto newKeyLoggedIn;
++                    }
++
+                     var url = $"{authServer}api/session/hasJoined?hash={authHash}&userId={msgEncResponse.UserId}";
+                     var joinedRespJson = await _http.Client.GetFromJsonAsync<HasJoinedResponse>(url);
+ 
+@@ -146,18 +173,25 @@ namespace Robust.Shared.Network
+                         return;
+                     }
+ 
++                    // NewKey: Defend against an auth server trying to claim keybound GUIDs
++                    var userGuid = joinedRespJson.UserData!.UserId;
++                    var bytes = userGuid.ToByteArray();
++                    bytes[7] &= 0x7F;
++                    userGuid = new Guid(bytes);
++
+                     _logger.Verbose(
+                         $"{connection.RemoteEndPoint}: Auth hash passed. " +
+-                        $"User ID: {joinedRespJson.UserData!.UserId}, " +
++                        $"User ID: {userGuid}, " +
+                         $"Username: {joinedRespJson.UserData!.UserName}," +
+                         $"Patron: {joinedRespJson.UserData.PatronTier}");
+ 
+-                    var userId = new NetUserId(joinedRespJson.UserData!.UserId);
++                    var userId = new NetUserId(userGuid);
+                     userData = new NetUserData(userId, joinedRespJson.UserData.UserName)
+                     {
+                         PatronTier = joinedRespJson.UserData.PatronTier,
+                         HWId = msgLogin.HWId
+                     };
++                    newKeyLoggedIn:
+                     padSuccessMessage = false;
+                     type = LoginType.LoggedIn;
+                 }
+diff --git a/Robust.Shared/Robust.Shared.csproj b/Robust.Shared/Robust.Shared.csproj
+index 333cbd5a9..2a2d29d80 100644
+--- a/Robust.Shared/Robust.Shared.csproj
++++ b/Robust.Shared/Robust.Shared.csproj
+@@ -8,6 +8,7 @@
+   </PropertyGroup>
+   <ItemGroup>
+     <PackageReference Include="JetBrains.Annotations" PrivateAssets="All" />
++    <PackageReference Include="JWT" />
+     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
+     <PackageReference Include="Microsoft.ILVerification" PrivateAssets="compile" />
+     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
+-- 
+2.43.0
+
