@@ -1,17 +1,15 @@
-From 9b4732723d432bd0b35955b2e0602749d9716e37 Mon Sep 17 00:00:00 2001
+From ca5de379e95cdc13af0365408fa840ed7e5b7c53 Mon Sep 17 00:00:00 2001
 From: t20kdc <asdd2808@gmail.com>
 Date: Fri, 11 Oct 2024 17:33:15 +0100
-Subject: [PATCH] NewKey, Implementation, 236.0.0, 11
+Subject: [PATCH 1/2] NewKey, InfraStatusHost, 236.0.0, 13
 
 ---
  .../ServerStatus/StatusHost.Handlers.cs       |   1 +
  .../ServerStatus/StatusHost.NewKey.cs         | 104 ++++++++++++++++++
  Robust.Shared/CVars.cs                        |  10 ++
- Robust.Shared/Network/IServerNetManager.cs    |   5 +
+ Robust.Shared/Network/IServerNetManager.cs    |   8 ++
  Robust.Shared/Network/NetManager.NewKey.cs    |  49 +++++++++
- .../Network/NetManager.ServerAuth.cs          |  35 +++++-
- .../RobustIntegrationTest.NetManager.cs       |   5 +
- 7 files changed, 208 insertions(+), 1 deletion(-)
+ 5 files changed, 172 insertions(+)
  create mode 100644 Robust.Server/ServerStatus/StatusHost.NewKey.cs
  create mode 100644 Robust.Shared/Network/NetManager.NewKey.cs
 
@@ -159,10 +157,10 @@ index ebd4e29b2..58074fdb1 100644
           * RENDERING
           */
 diff --git a/Robust.Shared/Network/IServerNetManager.cs b/Robust.Shared/Network/IServerNetManager.cs
-index 6da688fe6..9edeb5895 100644
+index 6da688fe6..a8ecfc104 100644
 --- a/Robust.Shared/Network/IServerNetManager.cs
 +++ b/Robust.Shared/Network/IServerNetManager.cs
-@@ -21,5 +21,10 @@ namespace Robust.Shared.Network
+@@ -21,5 +21,13 @@ namespace Robust.Shared.Network
          /// <param name="channel">NetChannel to disconnect.</param>
          /// <param name="reason">Reason why it was disconnected.</param>
          void DisconnectChannel(INetChannel channel, string reason);
@@ -170,7 +168,10 @@ index 6da688fe6..9edeb5895 100644
 +        /// <summary>
 +        /// NewKey: Put authhash into authentication cache.
 +        /// </summary>
-+        void NewKeyPutHash(string authHash, Guid guid);
++        void NewKeyPutHash(string authHash, Guid guid)
++        {
++            // Default must be here to reduce conflicts with integration testing
++        }
      }
  }
 diff --git a/Robust.Shared/Network/NetManager.NewKey.cs b/Robust.Shared/Network/NetManager.NewKey.cs
@@ -228,75 +229,6 @@ index 000000000..9c6268cba
 +        });
 +    }
 +}
-diff --git a/Robust.Shared/Network/NetManager.ServerAuth.cs b/Robust.Shared/Network/NetManager.ServerAuth.cs
-index 8296c446d..4af9df0b1 100644
---- a/Robust.Shared/Network/NetManager.ServerAuth.cs
-+++ b/Robust.Shared/Network/NetManager.ServerAuth.cs
-@@ -138,7 +138,31 @@ namespace Robust.Shared.Network
-                     var authHash = Base64Helpers.ConvertToBase64Url(authHashBytes);
- 
-                     var url = $"{authServer}api/session/hasJoined?hash={authHash}&userId={msgEncResponse.UserId}";
--                    var joinedRespJson = await _http.Client.GetFromJsonAsync<HasJoinedResponse>(url);
-+                    // NewKey: Launcher embeds signalling into the username which client passes.
-+                    // This signal tells us to ask Status for help.
-+                    HasJoinedResponse? joinedRespJson;
-+                    bool newkey = msgLogin.UserName.StartsWith("NK!", false, System.Globalization.CultureInfo.InvariantCulture);
-+                    if (newkey)
-+                    {
-+                        var reqUserName = msgLogin.UserName.Substring(3);
-+                        if (!UsernameHelpers.IsNameValid(reqUserName, out var reason))
-+                        {
-+                            connection.Disconnect($"Username is invalid ({reason.ToText()}).");
-+                            return;
-+                        }
-+                        // Notably, ConvertToBase64Url is not the same thing.
-+                        var res = NewKeyGetHash(Convert.ToBase64String(authHashBytes));
-+                        if (res == null)
-+                        {
-+                            connection.Disconnect(DisconnectReasonNewKeyError);
-+                            return;
-+                        }
-+                        joinedRespJson = NewKeyCreateHasJoinedResponse(reqUserName + "-" + res!, res!.Value);
-+                    }
-+                    else
-+                    {
-+                        joinedRespJson = await _http.Client.GetFromJsonAsync<HasJoinedResponse>(url);
-+                    }
- 
-                     if (joinedRespJson is not {IsValid: true})
-                     {
-@@ -146,6 +170,15 @@ namespace Robust.Shared.Network
-                         return;
-                     }
- 
-+                    if (!newkey)
-+                    {
-+                        // NewKey: Defend against an auth server trying to claim keybound GUIDs
-+                        var userGuid = joinedRespJson.UserData!.UserId;
-+                        var bytes = joinedRespJson.UserData!.UserId.ToByteArray();
-+                        bytes[7] &= 0x7F;
-+                        joinedRespJson = joinedRespJson with { UserData = joinedRespJson.UserData! with { UserId = new Guid(bytes) }};
-+                    }
-+
-                     _logger.Verbose(
-                         $"{connection.RemoteEndPoint}: Auth hash passed. " +
-                         $"User ID: {joinedRespJson.UserData!.UserId}, " +
-diff --git a/Robust.UnitTesting/RobustIntegrationTest.NetManager.cs b/Robust.UnitTesting/RobustIntegrationTest.NetManager.cs
-index 7553aa27a..b9e279a15 100644
---- a/Robust.UnitTesting/RobustIntegrationTest.NetManager.cs
-+++ b/Robust.UnitTesting/RobustIntegrationTest.NetManager.cs
-@@ -329,6 +329,11 @@ namespace Robust.UnitTesting
-                 channel.Disconnect(reason);
-             }
- 
-+            public Guid? NewKeyGetHash(string authHash) => null;
-+            public void NewKeyPutHash(string authHash, Guid guid)
-+            {
-+            }
-+
-             INetChannel? IClientNetManager.ServerChannel => ServerChannel;
-             public ClientConnectionState ClientConnectState => ClientConnectionState.NotConnecting;
- 
 -- 
 2.43.0
 

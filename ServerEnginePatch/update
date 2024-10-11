@@ -4,7 +4,7 @@ set -e
 
 # Try to ensure a coherent tag list...
 cd RobustToolbox
-git fetch origin
+git fetch -t origin
 git tag | grep "^v[0-9]" > tags_temp
 cd ..
 

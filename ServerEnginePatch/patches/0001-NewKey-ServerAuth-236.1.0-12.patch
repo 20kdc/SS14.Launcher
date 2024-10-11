@@ -1,0 +1,66 @@
+From bbf105abd039f616143ab72e2e98708df19581e1 Mon Sep 17 00:00:00 2001
+From: t20kdc <asdd2808@gmail.com>
+Date: Fri, 11 Oct 2024 19:32:27 +0100
+Subject: [PATCH] NewKey, ServerAuth, 236.1.0, 12
+
+---
+ .../Network/NetManager.ServerAuth.cs          | 36 ++++++++++++++++++-
+ 1 file changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/Robust.Shared/Network/NetManager.ServerAuth.cs b/Robust.Shared/Network/NetManager.ServerAuth.cs
+index a8eda20dc..080e22caa 100644
+--- a/Robust.Shared/Network/NetManager.ServerAuth.cs
++++ b/Robust.Shared/Network/NetManager.ServerAuth.cs
+@@ -141,7 +141,32 @@ namespace Robust.Shared.Network
+                     var authHash = Base64Helpers.ConvertToBase64Url(authHashBytes);
+ 
+                     var url = $"{authServer}api/session/hasJoined?hash={authHash}&userId={msgEncResponse.UserId}";
+-                    var joinedRespJson = await _http.Client.GetFromJsonAsync<HasJoinedResponse>(url);
++                    // NewKey: Launcher embeds signalling into the username which client passes.
++                    // This signal tells us to ask Status for help.
++                    HasJoinedResponse? joinedRespJson;
++                    bool newkey = msgLogin.UserName.StartsWith("NK!", false, System.Globalization.CultureInfo.InvariantCulture);
++                    if (newkey)
++                    {
++                        var reqUserName = msgLogin.UserName.Substring(3);
++                        if (!UsernameHelpers.IsNameValid(reqUserName, out var reason))
++                        {
++                            connection.Disconnect($"Username is invalid ({reason.ToText()}).");
++                            return;
++                        }
++                        // Notably, ConvertToBase64Url is not the same thing.
++                        var res = NewKeyGetHash(Convert.ToBase64String(authHashBytes));
++                        if (res == null)
++                        {
++                            connection.Disconnect(DisconnectReasonNewKeyError);
++                            return;
++                        }
++                        var hjud = new HasJoinedUserData(reqUserName, res!.Value, null);
++                        joinedRespJson = new HasJoinedResponse(true, hjud, null);
++                    }
++                    else
++                    {
++                        joinedRespJson = await _http.Client.GetFromJsonAsync<HasJoinedResponse>(url);
++                    }
+ 
+                     if (joinedRespJson is not {IsValid: true})
+                     {
+@@ -149,6 +174,15 @@ namespace Robust.Shared.Network
+                         return;
+                     }
+ 
++                    if (!newkey)
++                    {
++                        // NewKey: Defend against an auth server trying to claim keybound GUIDs
++                        var userGuid = joinedRespJson.UserData!.UserId;
++                        var bytes = joinedRespJson.UserData!.UserId.ToByteArray();
++                        bytes[7] &= 0x7F;
++                        joinedRespJson = joinedRespJson with { UserData = joinedRespJson.UserData! with { UserId = new Guid(bytes) }};
++                    }
++
+                     _logger.Verbose(
+                         $"{connection.RemoteEndPoint}: Auth hash passed. " +
+                         $"User ID: {joinedRespJson.UserData!.UserId}, " +
+-- 
+2.43.0
+

@@ -3,33 +3,69 @@
 		"base": "ebb71d6c12f844e91e1bb56eebe73ccda9b383aa",
 		"list": [
 			"patches/0001-NewKey-Platform-144.0.5-8.patch",
-			"patches/0001-NewKey-HasJoined-236.0.0-10.patch",
-			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
 		]
 	},
 	"v145.0.0": null,
+	"v156.0.5": {
+		"base": "6660471f01c9c83cc6b42887fc678d083f0ea262",
+		"list": [
+			"patches/0001-NewKey-Platform-156.0.5-8.patch",
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
+		]
+	},
+	"v157.0.0": null,
+	"v174.0.5": {
+		"base": "6660471f01c9c83cc6b42887fc678d083f0ea262",
+		"list": [
+			"patches/0001-NewKey-Platform-156.0.5-8.patch",
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
+		]
+	},
+	"v175.0.0": null,
+	"v203.0.4": {
+		"base": "6660471f01c9c83cc6b42887fc678d083f0ea262",
+		"list": [
+			"patches/0001-NewKey-Platform-156.0.5-8.patch",
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
+		]
+	},
+	"v204.0.0": null,
+	"v204.0.4": {
+		"base": "6660471f01c9c83cc6b42887fc678d083f0ea262",
+		"list": [
+			"patches/0001-NewKey-Platform-156.0.5-8.patch",
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
+		]
+	},
+	"v204.1.0": null,
 	"v205.0.0": {
 		"base": "ff4548f108a5b11e1a81cb7c01f7462400e4af2b",
 		"list": [
 			"patches/0001-NewKey-Platform-224.0.0-8.patch",
-			"patches/0001-NewKey-HasJoined-236.0.0-10.patch",
-			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
 		]
 	},
 	"v224.1.0": {
 		"base": "1c3ea968e4ab66d57ffe014f6ee207e4d0d2c403",
 		"list": [
 			"patches/0001-NewKey-Platform-236.0.0-8.patch",
-			"patches/0001-NewKey-HasJoined-236.0.0-10.patch",
-			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0002-NewKey-ServerAuth-236.0.0-12.patch"
 		]
 	},
 	"v236.1.0": {
 		"base": "d1d43f834b8845da698ef1898e8191ab159ee367",
 		"list": [
 			"patches/0001-NewKey-Platform-236.0.0-8.patch",
-			"patches/0001-NewKey-HasJoined-236.1.0-10.patch",
-			"patches/0001-NewKey-Implementation-236.0.0-11.patch"
+			"patches/0001-NewKey-InfraStatusHost-236.0.0-13.patch",
+			"patches/0001-NewKey-ServerAuth-236.1.0-12.patch"
 		]
 	}
 }
