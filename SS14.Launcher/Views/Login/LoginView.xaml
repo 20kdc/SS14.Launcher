@@ -24,7 +24,10 @@
              Text="{Binding EditingUsername, Mode=TwoWay}" IsEnabled="{Binding !Busy}" />
 
     <TextBox DockPanel.Dock="Top" Name="PasswordBox" MaxWidth="300" Margin="0, 4, 0, 0" Watermark="{loc:Get WizDen Password}"
-             Text="{Binding EditingPassword, Mode=TwoWay}" PasswordChar="•" IsEnabled="{Binding !Busy}" />
+             Text="{Binding EditingPassword, Mode=TwoWay}" PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}" IsEnabled="{Binding !Busy}" />
+
+    <CheckBox DockPanel.Dock="Top" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="4"
+              IsChecked="{Binding IsPasswordVisible}" Content="{loc:Get Show Password}" />
 
     <DockPanel DockPanel.Dock="Top" LastChildFill="False" MaxWidth="300" Margin="0 20 0 0">
       <Button DockPanel.Dock="Right" HorizontalAlignment="Center"
